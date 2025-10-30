@@ -1,0 +1,42 @@
+# ==========================================================
+# 1. FILE HỆ THỐNG VÀ IDE
+# ==========================================================
+
+# macOS
+.DS_Store
+.localized
+# Thư mục chứa metadata của macOS (File tạm thời của Finder)
+.Trashes
+
+# VS Code
+.vscode/
+
+# Python Tự động sinh ra
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# Thư mục xây dựng/biên dịch (Building/Compilation artifacts)
+/build/
+/dist/
+
+# ==========================================================
+# 3. OUTPUT VÀ DỮ LIỆU MACHINE LEARNING
+# ==========================================================
+
+# Dữ liệu video lớn đầu vào (nếu không muốn upload)
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Bỏ qua toàn bộ các thư mục chứa output, dữ liệu lớn
+/image_seq/
+seqinfo.ini
+*.json
+*.pth
+*.tar
+*.pickle
+*.txt
+*.ipynb

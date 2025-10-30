@@ -1,0 +1,11 @@
+_BASE_: ../Base-SBS.yml
+
+MODEL:
+  BACKBONE:
+    NAME: build_resnest_backbone
+
+DATASETS:
+  NAMES: ("MOT17_half",)
+  TESTS: ("MOT17_half",)
+
+OUTPUT_DIR: logs/MOT17_half/sbs_S50

@@ -14,7 +14,7 @@ import torch.backends.cudnn as cudnn
 from yolox.evaluators import DetEvaluator
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-def yolox_parser(nms_thr, exp_path, seq_name, data, output_path, weight_dir):
+def yolox_parser(nms_thr, exp_path, seq_name, data, output_path, weight_dir, model_name):
     parser = argparse.ArgumentParser("YOLOX")
 
     # Can be changed
@@ -25,7 +25,7 @@ def yolox_parser(nms_thr, exp_path, seq_name, data, output_path, weight_dir):
                         default=f"{weight_dir}/{data}.pth.tar",
                         type=str, help="ckpt for eval")
     parser.add_argument("-n","--exp_name", type=str,
-                        default=f"{output_path}/seq_{str(nms_thr)}.pickle")
+                        default=f"{output_path}/seq_{str(nms_thr)}_{model_name}.pickle")
 
     # Fixed
     parser.add_argument("-b", "--batch-size", type=int, default=1, help="batch size")
@@ -120,6 +120,7 @@ def detect():
     config_env.read('../env.ini')
 
     data2model = config_env.get("Model", "data2model")
+    model_name = config_env.get("Model", "model")
     
     # Get video name
     output_path = config_env.get("Path", "output_path")
@@ -135,7 +136,7 @@ def detect():
 
         # Tạo argument
         filtered_argv = [arg for arg in sys.argv if not arg.startswith('--HistoryManager')]
-        args = yolox_parser(nms_thr, exp_path, seq_name, data2model, det_output_path, weight_path).parse_args(filtered_argv[1:])
+        args = yolox_parser(nms_thr, exp_path, seq_name, data2model, det_output_path, weight_path, model_name).parse_args(filtered_argv[1:])
 
         exp = get_exp(args.exp_file)
         exp.merge(args.opts)

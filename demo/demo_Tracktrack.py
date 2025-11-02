@@ -14,6 +14,9 @@ def main():
     config_env = ConfigParser()
     config_env.read('../env.ini')
 
+    model = config_env.get("Model", "model")
+
+
     
     # Tách video thành folder ảnh, tạo các file json, exp
     from Utils.split_video import video_preprocess
@@ -25,11 +28,14 @@ def main():
     create_output_folder()
 
 
-    # YOLOX detect
-    print("Bắt đầu detect")
-    from Tracktrack.YOLOX.run_detect import detect
-    detect()
-
+    print("Detect bằng model: ",model)
+    if model == "yoloxx":
+        # YOLOX detect
+        from Tracktrack.YOLOX.run_detect import detect
+        detect()
+    else:
+        from Tracktrack.YOLOv.run_detect import run
+        run()
 
     # ReID
     print("ReID")

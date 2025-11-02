@@ -10,7 +10,7 @@ import configparser
 from tqdm import tqdm
 from fastreid.emb_computer import EmbeddingComputer
 
-def make_parser(det_output, reid_output, nms_thr, data_path, seq_name, mode, data2model, config_path, weight_path):
+def make_parser(det_output, reid_output, nms_thr, data_path, mode, data2model, model_name, config_path, weight_path):
     
     configs = {
         "mot17": f"{config_path}/MOT17/sbs_S50.yml",
@@ -28,8 +28,8 @@ def make_parser(det_output, reid_output, nms_thr, data_path, seq_name, mode, dat
     parser.add_argument("-f", "--dummy_arg", type=str, default="")
     parser.add_argument("--dataset", type=str, default=f'{data_path}/')
     parser.add_argument("--data_path", type=str, default=f"{data_path}/{mode}/")
-    parser.add_argument("--pickle_path", type=str, default=f"{det_output}/seq_{str(nms_thr)}.pickle")
-    parser.add_argument("--output_path", type=str, default=f"{reid_output}/seq_{str(nms_thr)}.pickle")
+    parser.add_argument("--pickle_path", type=str, default=f"{det_output}/seq_{str(nms_thr)}_{model_name}.pickle")
+    parser.add_argument("--output_path", type=str, default=f"{reid_output}/seq_{str(nms_thr)}_{model_name}.pickle")
     parser.add_argument("--config_path", type=str, default=configs[data2model])
     parser.add_argument("--weight_path", type=str, default=weights[data2model])
 
@@ -53,6 +53,7 @@ def reid():
     reid_output_path = f"{output_path}/{seq_name}/2. det_feat" # VD: ../Outputs/video2/2. det_feat
     mode = config_env.get("General", "mode")
     data2model = config_env.get("Model", "data2model")
+    model_name = config_env.get("Model", "model")
     config_path = config_env.get("ReID", "config_path")
     weight_path = config_env.get("ReID", "weight_path")
     input_path = config_env.get("Path", "input_path")
@@ -64,7 +65,7 @@ def reid():
         
         # Get arguments
         filtered_argv = [arg for arg in sys.argv if not arg.startswith('--HistoryManager')]
-        args = make_parser(det_output_path, reid_output_path, nms_thr, img_path, seq_name, mode, data2model, config_path, weight_path).parse_args(filtered_argv[1:])
+        args = make_parser(det_output_path, reid_output_path, nms_thr, img_path, mode, data2model, model_name, config_path, weight_path).parse_args(filtered_argv[1:])
     
         # Set random seeds
         random.seed(args.seed)

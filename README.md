@@ -84,8 +84,7 @@ pip install -r requirements.txt
 
 <h3>[Model]</h3>
 <p>data2model= mot17 (dùng cho lựa chọn mô hình detect, reid (mot17: thông thường, mot20: cảnh đông đúc))</p>
-<p>model= yolox (mô hình sử dụng, [yolox, yolov5, yolov12])</p>
-<p>type = (phiên bản của mô hình, vd: s,m,l,x (mặc định rỗng => x))</p>
+<p>model= yolox (mô hình sử dụng, [yoloxx, yolov5x, yolov12x])</p>
 
 <h3>[YOLOX]</h3>
 <p>exp_path = ../Tracktrack/YOLOX/exps (Đường dẫn folder exp, cố định)</p>

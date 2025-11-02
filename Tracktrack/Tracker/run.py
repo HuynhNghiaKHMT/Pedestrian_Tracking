@@ -39,12 +39,12 @@ def make_parser(reid_output, track_output, input_path, mode):
     return parser
 
 
-def track(args, detections, detections_95, data_path, result_folder, mode, model_type):
+def track(args, detections, detections_95, data_path, result_folder, mode, model_name):
     # For each video
     total_time, total_count = 0, 0
     for vid_name in detections.keys():
         # Set proper parameters
-        set_parameters(args, vid_name, mode, model_type)
+        set_parameters(args, vid_name, mode, model_name)
 
         # Set max time lost
         seq_info = open(data_path + vid_name + '/seqinfo.ini', mode='r')  # Input/image_seq/test/video2/seqinfo.ini
@@ -94,7 +94,7 @@ def track(args, detections, detections_95, data_path, result_folder, mode, model
     return total_time, total_count
 
 
-def run(args, model_type, af_link):
+def run(args, model_name, af_link):
     # Initialize AFLink
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = PostLinker()
@@ -103,7 +103,7 @@ def run(args, model_type, af_link):
 
     # Logging & Set proper parameters
     print('Running %s %s...' % (args.dataset, args.mode))
-    set_parameters(args, args.dataset, args.mode, model_type)
+    set_parameters(args, args.dataset, args.mode, model_name)
     # Make result folder
     trackers_to_eval = args.pickle_path.split('/')[-1].split('.pickle')[0]
     result_folder = os.path.join(args.output_dir, trackers_to_eval)
@@ -117,7 +117,7 @@ def run(args, model_type, af_link):
         detections_95 = pickle.load(f)
 
     # Track
-    total_time, total_count = track(args, detections, detections_95, args.data_path, result_folder, args.mode, model_type)
+    total_time, total_count = track(args, detections, detections_95, args.data_path, result_folder, args.mode, model_name)
 
     # Post-processing
     print('Running post-processing...')
@@ -156,7 +156,7 @@ def tracker():
 
     mode = config_env.get("General", "mode")
     input_path = config_env.get("Path", "input_path")
-    model_type = config_env.get("Model", "type")
+    model_name = config_env.get("Model", "model")
     af_link = config_env.get("Track", "af_link")
     
     
@@ -170,4 +170,5 @@ def tracker():
     os.environ["PYTHONHASHSEED"] = str(args.seed)
 
     # Run
-    run(args, model_type, af_link)
+    model_name = f"_{model_name}"
+    run(args, model_name, af_link)

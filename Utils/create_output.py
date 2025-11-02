@@ -5,7 +5,7 @@ import configparser
 import pickle
 import pandas as pd
 
-def create_output_video(output_path, video_root, seq_name, img_folder_path, mode):
+def create_output_video(output_path, video_root, seq_name, img_folder_path, mode, model_name):
     # === Định nghĩa Hàm Màu Toàn Cục ===
     # Định nghĩa màu ngẫu nhiên cho từng ID
     colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (0, 255, 255), (255, 0, 255), (100, 100, 200)]
@@ -19,8 +19,8 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
     ## Đường dẫn folder
     img_folder = fr"{img_folder_path}/{mode}/{seq_name}/img1"
     path_root = fr"{output_path}/{seq_name}"
-    det_file_rel = fr"1. det/seq_0.8.pickle" 
-    predict_file_rel = fr"3. track/seq_0.8/{seq_name}.txt" 
+    det_file_rel = fr"1. det/seq_0.8_{model_name}.pickle" 
+    predict_file_rel = fr"3. track/seq_0.8_{model_name}/{seq_name}.txt" 
 
     ## Đường dẫn video
     original_video_name = fr"{seq_name}_original.mp4" 
@@ -310,8 +310,9 @@ def create_video():
     video_output_path = f"{output_path}/{seq_name}/videos" # VD: ../Outputs/video2/videos
     img_folder_path = f"{input_path}/image_seq"
     mode = config_env.get("General", "mode")
+    model_name = config_env.get("Model", "model")
 
-    create_output_video(output_path, video_output_path, seq_name, img_folder_path, mode)
+    create_output_video(output_path, video_output_path, seq_name, img_folder_path, mode, model_name)
 
 
 def create_output_folder():
@@ -322,7 +323,6 @@ def create_output_folder():
     output_path = config_env.get("Path", "output_path")
     input_video = config_env.get("Input", "input_video")
     seq_name = os.path.splitext(os.path.basename(input_video))[0]
-
     # Create det, feat, track, video folder
     folders = ["1. det", "2. det_feat", "3. track", "videos"]
     

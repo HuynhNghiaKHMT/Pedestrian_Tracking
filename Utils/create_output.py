@@ -24,23 +24,23 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
 
     ## Đường dẫn video
     original_video_name = fr"{seq_name}_original.mp4" 
-    det_video_name = fr"{seq_name}_det.mp4"
-    predict_video_name = fr"{seq_name}_predict.mp4"
-    track_video = fr"{seq_name}_track.mp4"
-    final_video_name = fr"{seq_name}_final.mp4"
+    detection_video_name = fr"{seq_name}_detection.mp4"
+    tracking_video_name = fr"{seq_name}_tracking.mp4"
+    trajectory_video_name = fr"{seq_name}_trajectory.mp4"
+    combine_video_name = fr"{seq_name}_combine.mp4"
     fps = 30 # tùy theo từng video mà đặt fps cho phù hợp
 
     # === Đường dẫn tệp tin đầu vào (Input Files) ===
-    det_file_path = os.path.join(path_root, det_file_rel)
-    predict_file_path = os.path.join(path_root, predict_file_rel)
+    detection_file_path = os.path.join(path_root, det_file_rel)
+    tracking_file_path = os.path.join(path_root, predict_file_rel)
 
     # === Đường dẫn Video đầu ra (Output Video Paths) ===
     video_root = video_root
     original_video_path = os.path.join(video_root, f"{original_video_name}")
-    det_video_path = os.path.join(video_root, f"{det_video_name}")
-    predict_video_path = os.path.join(video_root, f"{predict_video_name}")
-    track_video_path = os.path.join(video_root, f"{track_video}")
-    final_video_path = os.path.join(video_root, f"{final_video_name}")
+    detection_video_path = os.path.join(video_root, f"{detection_video_name}")
+    tracking_video_path = os.path.join(video_root, f"{tracking_video_name}")
+    trajectory_video_path = os.path.join(video_root, f"{trajectory_video_name}")
+    combine_video_path = os.path.join(video_root, f"{combine_video_name}")
 
 
     # Lấy danh sách ảnh và sắp xếp (Bạn cần đảm bảo biến 'images' được định nghĩa)
@@ -57,13 +57,13 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
         print(f"Lỗi khởi tạo: {e}")
         # exit()
     # ... (Phần in đường dẫn)
-    print(f"Đường dẫn file det.txt: {det_file_path}")
-    print(f"Đường dẫn file predict.txt: {predict_file_path}")
-    print(f"Đường dẫn video original: {original_video_path}")
-    print(f"Đường dẫn video det: {det_video_path}")
-    print(f"Đường dẫn video predict: {predict_video_path}")
-    print(f"Đường dẫn video track: {track_video_path}")
-    print(f"Đường dẫn video final: {final_video_path}")
+    print(f"Path file detection.txt: {detection_file_path}")
+    print(f"Path file tracking.txt: {tracking_file_path}")
+    print(f"Path video original: {original_video_path}")
+    print(f"Path video detection: {detection_video_path}")
+    print(f"Path video tracking: {tracking_video_path}")
+    print(f"Path video trajectory: {trajectory_video_path}")
+    print(f"Path video combine: {combine_video_path}")
 
     # -------------------------
     ## 1. Original Video (Không thay đổi)
@@ -78,16 +78,16 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
             video.write(img)
 
     video.release()
-    print(f"Video saved successfully at: {original_video_path}")
+    print(f"Video saved at: {original_video_path}")
 
 
     # -------------------------
     ## 2. Det Video 
     # -------------------------
     try:
-        with open(det_file_path, 'rb') as f:
+        with open(detection_file_path, 'rb') as f:
             detections = pickle.load(f)
-        video = cv2.VideoWriter(det_video_path, fourcc, fps, (width, height))
+        video = cv2.VideoWriter(detection_video_path, fourcc, fps, (width, height))
 
         for idx, image_name in enumerate(images, start=1):
             frame = cv2.imread(os.path.join(img_folder, image_name))
@@ -109,10 +109,10 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
             video.write(frame)
 
         video.release()
-        print(f"Video saved successfully at: {det_video_path}")
+        print(f"Video saved at: {detection_video_path}")
 
     except FileNotFoundError:
-        print(f"Lỗi: Không tìm thấy file DET tại {det_file_path}")
+        print(f"Lỗi: Không tìm thấy file DET tại {detection_file_path}")
     except Exception as e:
         print(f"Lỗi khi xử lý DET video: {e}")
 
@@ -122,10 +122,10 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
     # -------------------------
 
     try:
-        df_pred = pd.read_csv(predict_file_path, header=None).iloc[:, :9]
+        df_pred = pd.read_csv(tracking_file_path, header=None).iloc[:, :9]
         df_pred.columns = ["frame", "id", "x", "y", "w", "h", "flag", "class", "visibility"]
         df_pred['flag'] = pd.to_numeric(df_pred['flag'], errors='coerce').fillna(0).astype(int)
-        video = cv2.VideoWriter(predict_video_path, fourcc, fps, (width, height))
+        video = cv2.VideoWriter(tracking_video_path, fourcc, fps, (width, height))
 
         for idx, image_name in enumerate(images, start=1):
             frame = cv2.imread(os.path.join(img_folder, image_name))
@@ -151,10 +151,10 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
             video.write(frame)
 
         video.release()
-        print(f"Video saved successfully at: {predict_video_path}")
+        print(f"Video saved at: {tracking_video_path}")
 
     except FileNotFoundError:
-        print(f"Lỗi: Không tìm thấy file PREDICT tại {predict_file_path}")
+        print(f"Lỗi: Không tìm thấy file PREDICT tại {tracking_file_path}")
     except Exception as e:
         print(f"Lỗi khi xử lý PREDICT video: {e}")
 
@@ -164,7 +164,7 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
     # -------------------------
 
     try:
-        video = cv2.VideoWriter(track_video_path, fourcc, fps, (width, height))
+        video = cv2.VideoWriter(trajectory_video_path, fourcc, fps, (width, height))
         track_history = {} 
         TRACK_HISTORY_FRAMES = 50 
         
@@ -221,10 +221,10 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
             video.write(frame_track)
 
         video.release()
-        print(f"Video saved successfully at: {track_video_path}")
+        print(f"Video saved at: {trajectory_video_path}")
 
     except FileNotFoundError:
-        print(f"Lỗi: Không tìm thấy file PREDICT tại {predict_file_path} để vẽ quỹ đạo.")
+        print(f"Lỗi: Không tìm thấy file PREDICT tại {tracking_file_path} để vẽ quỹ đạo.")
     except Exception as e:
         print(f"Lỗi khi xử lý Track Video: {e}")
         
@@ -235,9 +235,9 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
     try:
         # 1. Khởi tạo Video Readers
         cap_ori = cv2.VideoCapture(original_video_path)
-        cap_det = cv2.VideoCapture(det_video_path)
-        cap_pred = cv2.VideoCapture(predict_video_path)
-        cap_track = cv2.VideoCapture(track_video_path)
+        cap_det = cv2.VideoCapture(detection_video_path)
+        cap_pred = cv2.VideoCapture(tracking_video_path)
+        cap_track = cv2.VideoCapture(trajectory_video_path)
 
         # 2. Kiểm tra các video đã được mở chưa
         if not (cap_ori.isOpened() and cap_det.isOpened() and cap_pred.isOpened() and cap_track.isOpened()):
@@ -258,7 +258,7 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
         final_height = height * 2
 
         # 4. Khởi tạo Video Writer cho video cuối cùng
-        video_final = cv2.VideoWriter(final_video_path, fourcc, fps, (final_width, final_height))
+        video_final = cv2.VideoWriter(combine_video_path, fourcc, fps, (final_width, final_height))
 
         # 5. Đọc và ghép từng khung hình
         frame_count = 0
@@ -287,7 +287,7 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
         cap_track.release()
         video_final.release()
 
-        print(f"Video saved successfully at: {final_video_path}")
+        print(f"Video saved at: {combine_video_path}")
 
     except Exception as e:
         print(f"\n❌ Lỗi khi tạo Final Video: {e}")
@@ -297,7 +297,7 @@ def create_video():
     
     # Config
     config_env = configparser.ConfigParser()
-    config_env.read("../env.ini")
+    config_env.read("env.ini")
     
 
     # Get video name
@@ -317,7 +317,7 @@ def create_video():
 def create_output_folder():
     # Config
     config_env = configparser.ConfigParser()
-    config_env.read("../env.ini")
+    config_env.read("env.ini")
 
     output_path = config_env.get("Path", "output_path")
     input_video = config_env.get("Input", "input_video")

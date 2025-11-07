@@ -88,6 +88,11 @@ def create_anno_json(json_path, input_path, seq_name, mode):
     # Đường dẫn lưu file
     out_path = f'{json_path}/{seq_name}.json'
 
+    # Tạo thư mục nếu nó chưa tồn tại. 
+    output_dir = os.path.dirname(out_path) 
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+
     
     # Nội dung file
     ann_cnt = 0
@@ -147,8 +152,10 @@ class Exp(MyExp):
         self.exp_name = '{seq_name}'
         self.train_ann = ""
         self.val_ann = "{json_path}/{seq_name}.json"
-        self.input_size = (800, 1440)
-        self.test_size = (800, 1440)
+        # self.input_size = (800, 1440)
+        # self.test_size = (800, 1440)
+        self.input_size = (384, 672)
+        self.test_size = (384, 672)
         self.random_size = (18, 32)
         self.max_epoch = 80
         self.print_interval = 20
@@ -280,7 +287,7 @@ def video_preprocess():
 
     # Đọc file config
     config_env = configparser.ConfigParser()
-    config_env.read('../env.ini')
+    config_env.read('env.ini')
 
 
     # Config

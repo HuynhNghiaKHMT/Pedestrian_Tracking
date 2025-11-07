@@ -9,6 +9,7 @@ import numpy as np
 import configparser
 from tqdm import tqdm
 from fastreid.emb_computer import EmbeddingComputer
+import torch # <--- BỔ SUNG DÒNG NÀY
 
 def make_parser(det_output, reid_output, nms_thr, data_path, seq_name, mode, data2model, config_path, weight_path):
     
@@ -42,7 +43,7 @@ def reid():
 
     # Config
     config_env = configparser.ConfigParser()
-    config_env.read('../env.ini')
+    config_env.read('env.ini')
 
     # Get video name
     output_path = config_env.get("Path", "output_path")
@@ -59,7 +60,7 @@ def reid():
     img_path = f"{input_path}/image_seq"
      
 
-    for nms in [0.80, 0.95]:
+    for nms in [0.8, 0.95]:
         nms_thr = nms
         
         # Get arguments
@@ -77,26 +78,29 @@ def reid():
         # Read detection
         with open(args.pickle_path, 'rb') as f:
             detections = pickle.load(f)
-        # Feature extraction
-        for vid_name in detections.keys():
-            for frame_id in tqdm(detections[vid_name].keys()):
-                # If there is no detection
-                if detections[vid_name][frame_id] is None:
-                    continue
-    
-                # Read image
-                img = cv2.imread(args.data_path + vid_name + '/img1/%06d.jpg' % frame_id)
-    
-                # Get detection
-                detection = detections[vid_name][frame_id]
-    
-                # Get features
-                if detection is not None:
-                    embedding = embedder.compute_embedding(img, detection[:, :4])
-                    detections[vid_name][frame_id] = np.concatenate([detection, embedding], axis=1)
-    
-                # Logging
-                # print(vid_name, frame_id, flush=True)
+
+        # Feature extraction được bọc trong torch.no_grad()
+        with torch.no_grad(): # <--- BỔ SUNG DÒNG NÀY
+            # Feature extraction
+            for vid_name in detections.keys():
+                for frame_id in tqdm(detections[vid_name].keys()):
+                    # If there is no detection
+                    if detections[vid_name][frame_id] is None:
+                        continue
+        
+                    # Read image
+                    img = cv2.imread(args.data_path + vid_name + '/img1/%06d.jpg' % frame_id)
+        
+                    # Get detection
+                    detection = detections[vid_name][frame_id]
+        
+                    # Get features
+                    if detection is not None:
+                        embedding = embedder.compute_embedding(img, detection[:, :4])
+                        detections[vid_name][frame_id] = np.concatenate([detection, embedding], axis=1)
+        
+                    # Logging
+                    # print(vid_name, frame_id, flush=True)
     
         # Save
         with open(args.output_path, 'wb') as handle:

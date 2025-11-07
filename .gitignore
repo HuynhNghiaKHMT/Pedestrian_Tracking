@@ -21,6 +21,10 @@ __pycache__/
 /build/
 /dist/
 
+venv/
+Input/
+Outputs/
+Tracktrack/YOLOX/exps/
 # ==========================================================
 # 3. OUTPUT VÀ DỮ LIỆU MACHINE LEARNING
 # ==========================================================
@@ -38,5 +42,4 @@ seqinfo.ini
 *.pth
 *.tar
 *.pickle
-*.txt
 *.ipynb

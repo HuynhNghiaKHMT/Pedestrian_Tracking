@@ -10,16 +10,20 @@ from AFLink.AppFreeLink import *
 from AFLink.model import PostLinker
 from AFLink.dataset import LinkData
 from trackers.tracker import Tracker
-from utils.etc import *
-from utils.gbi import gb_interpolation
+# from utils.etc import *
+# from utils.gbi import gb_interpolation
+from Tracktrack.Tracker.utils.etc import *
+from Tracktrack.Tracker.utils.gbi import gb_interpolation
 
 
-def make_parser(reid_output, track_output, input_path, mode):
+def make_parser(reid_output, track_output, input_path, mode, pickle_path_80, pickle_path_95):
     parser = argparse.ArgumentParser("Tracker")
 
     # Basic
     parser.add_argument("-f","--dummy", default="", type=str, help="dummy arg")
     parser.add_argument("--cmc_path", type=str, default=None)
+    parser.add_argument("--pickle_path", type=str, default=pickle_path_80) # <--- BỔ SUNG
+    parser.add_argument("--pickle_path_95", type=str, default=pickle_path_95) # <--- BỔ SUNG
     parser.add_argument("--pickle_dir", type=str, default=f"{reid_output}/")
     parser.add_argument("--output_dir", type=str, default=f"{track_output}")
     parser.add_argument("--data_dir", type=str, default=f"{input_path}/")
@@ -144,7 +148,7 @@ def run(args, model_type, af_link):
 def tracker():
     # Config
     config_env = configparser.ConfigParser()
-    config_env.read('../env.ini')
+    config_env.read('env.ini')
 
     # Get video name
     output_path = config_env.get("Path", "output_path")
@@ -154,15 +158,26 @@ def tracker():
     reid_output_path = f"{output_path}/{seq_name}/2. det_feat" # VD: ../Outputs/video2/2. det_feat
     track_output_path = f"{output_path}/{seq_name}/3. track" # VD: ../Outputs/video2/3. track
 
+    pickle_path_80 = os.path.join(reid_output_path, 'seq_0.8.pickle')
+    pickle_path_95 = os.path.join(reid_output_path, 'seq_0.95.pickle')
+
     mode = config_env.get("General", "mode")
     input_path = config_env.get("Path", "input_path")
     model_type = config_env.get("Model", "type")
     af_link = config_env.get("Track", "af_link")
     
-    
+    penalty_p = float(config_env.get("Tracking", "penalty_p", fallback=0.2))
+    penalty_q = float(config_env.get("Tracking", "penalty_q", fallback=0.4))
+    tai_thr   = float(config_env.get("Tracking", "tai_thr", fallback=0.55))
+
     # Get arguments
     filtered_argv = [arg for arg in sys.argv if not arg.startswith('--HistoryManager')]
-    args = make_parser(reid_output_path, track_output_path, input_path, mode).parse_args(filtered_argv[1:])
+    args = make_parser(reid_output_path, track_output_path, input_path, 
+                       mode, pickle_path_80, pickle_path_95).parse_args(filtered_argv[1:])
+
+    args.penalty_p = penalty_p
+    args.penalty_q = penalty_q
+    args.tai_thr = tai_thr
 
     # Set random seed
     random.seed(args.seed)
@@ -171,3 +186,4 @@ def tracker():
 
     # Run
     run(args, model_type, af_link)
+    print("[DEBUG] Tracking params:", args.penalty_p, args.penalty_q, args.tai_thr)

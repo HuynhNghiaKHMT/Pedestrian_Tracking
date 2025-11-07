@@ -36,45 +36,62 @@ class DetEvaluator:
 
         # Detect
         for images, _, infos, ids in tqdm(self.dataloader):
-            # Get video name and frame index
-            video_name = infos[4][0].split('/')[2]
-            frame_id = int(infos[2].item())
-
-            # Initialize
-            if video_name not in det_results.keys():
-                det_results[video_name] = {}
-
-            # Detect
-            # outputs: (x1, y1, x2, y2, obj_conf, class_conf, class_pred)
+            
+            # Detect THE ENTIRE BATCH (images)
             with torch.no_grad():
                 images = images.type(tensor_type)
-                outputs = model(images) # Lấy output từ images
-                outputs = postprocess(outputs, self.num_classes, self.conf_thresh, self.nms_thresh)[0]
+                # outputs sẽ là một list hoặc tensor có kích thước Batch Size x ...
+                outputs = model(images)
+                # postprocess TRẢ VỀ MỘT LIST CÁC KẾT QUẢ DETECTION cho từng ảnh trong batch
+                postprocess_outputs = postprocess(outputs, self.num_classes, self.conf_thresh, self.nms_thresh)
 
-            if outputs is not None:
-                # Get final confidence
-                outputs[:, 4] *= outputs[:, 5]
-                outputs[:, 5] = outputs[:, 6]
-                outputs = outputs[:, :6]
+            # LẶP QUA TỪNG KẾT QUẢ ĐƠN LẺ TRONG BATCH
+            for i, output in enumerate(postprocess_outputs):
+                
+                # Lấy thông tin cho hình ảnh thứ i trong batch
+                # Cần chắc chắn rằng infos được tổ chức theo Batch Size
+                # Ví dụ: infos[2] là tensor chứa [frame_id_0, frame_id_1, ...]
+                #        infos[4] là list chứa [path_0, path_1, ...]
+                
+                try:
+                    # Trích xuất thông tin video và frame_id
+                    video_name = infos[4][i].split('/')[2]
+                    frame_id = int(infos[2][i].item()) # Dùng [i] để lấy phần tử thứ i trong batch
 
-                # Prepare un-normalize size
-                img_h, img_w = infos[0], infos[1]
-                img_h, img_w = float(img_h), float(img_w)
-                scale = min(self.img_size[0] / float(img_h), self.img_size[1] / float(img_w))
+                except IndexError:
+                    # Xử lý trường hợp không đủ thông tin cho batch (ít xảy ra nếu dataloader chuẩn)
+                    print("Lỗi: Không đủ thông tin infos cho batch size lớn.")
+                    continue
 
-                # Un-normalize size
-                outputs = outputs.detach().cpu().numpy()
-                outputs[:, :4] /= scale
+                # Khởi tạo (nếu cần)
+                if video_name not in det_results.keys():
+                    det_results[video_name] = {}
+                
+                # Xử lý kết quả Detection cho frame_id này
+                if output is not None:
+                    
+                    # Get final confidence (output: x1, y1, x2, y2, obj_conf, class_conf, class_pred)
+                    output[:, 4] *= output[:, 5]
+                    output[:, 5] = output[:, 6]
+                    output = output[:, :6]
 
-                # Clip
-                outputs = outputs[(np.minimum(outputs[:, 2], img_w - 1) - np.maximum(outputs[:, 0], 0)) > 0]
-                outputs = outputs[(np.minimum(outputs[:, 3], img_h - 1) - np.maximum(outputs[:, 1], 0)) > 0]
+                    # Prepare un-normalize size (Lấy thông tin cho ảnh thứ i)
+                    img_h, img_w = infos[0][i].item(), infos[1][i].item() # Cần lấy theo index [i]
+                    scale = min(self.img_size[0] / float(img_h), self.img_size[1] / float(img_w))
+                    
+                    # Un-normalize size
+                    final_outputs = output.detach().cpu().numpy()
+                    final_outputs[:, :4] /= scale
 
-                # Save
-                det_results[video_name][frame_id] = outputs if len(outputs) > 0 else None
+                    # Clip
+                    final_outputs = final_outputs[(np.minimum(final_outputs[:, 2], img_w - 1) - np.maximum(final_outputs[:, 0], 0)) > 0]
+                    final_outputs = final_outputs[(np.minimum(final_outputs[:, 3], img_h - 1) - np.maximum(final_outputs[:, 1], 0)) > 0]
 
-            # If there is no detection result
-            else:
-                det_results[video_name][frame_id] = None
+                    # Save
+                    det_results[video_name][frame_id] = final_outputs if len(final_outputs) > 0 else None
+
+                # If there is no detection result
+                else:
+                    det_results[video_name][frame_id] = None
 
         return det_results

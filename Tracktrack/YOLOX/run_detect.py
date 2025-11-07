@@ -28,7 +28,7 @@ def yolox_parser(nms_thr, exp_path, seq_name, data, output_path, weight_dir):
                         default=f"{output_path}/seq_{str(nms_thr)}.pickle")
 
     # Fixed
-    parser.add_argument("-b", "--batch-size", type=int, default=1, help="batch size")
+    parser.add_argument("-b", "--batch-size", type=int, default=2, help="batch size")
     parser.add_argument("-d", "--devices", default=1, type=int, help="device for training")
     parser.add_argument("--fuse", dest="fuse", default=True, action="store_true", help="Fuse conv and bn",)
     parser.add_argument("--fp16", dest="fp16", default=True, action="store_true",)
@@ -113,11 +113,13 @@ def main(exp, args, num_gpu):
 
     with open(args.exp_name, 'wb') as f:
         pickle.dump(det_results, f, protocol=pickle.HIGHEST_PROTOCOL)
-    
+
+
+
 def detect():
     # Config
     config_env = configparser.ConfigParser()
-    config_env.read('../env.ini')
+    config_env.read('env.ini')
 
     data2model = config_env.get("Model", "data2model")
     
@@ -130,12 +132,20 @@ def detect():
     weight_path = config_env.get("YOLOX", "weight_path")
     exp_path = config_env.get("YOLOX", "exp_path")
 
-    for nms in [0.80, 0.95]:
+    # Đọc tham số detection từ env.ini
+    conf = float(config_env.get("Detection", "conf", fallback=0.1))
+    nms_1 = float(config_env.get("Detection", "nms_1", fallback=0.8))
+    nms_2 = float(config_env.get("Detection", "nms_2", fallback=0.95))
+
+    for nms in [nms_1, nms_2]:
         nms_thr = nms
 
         # Tạo argument
         filtered_argv = [arg for arg in sys.argv if not arg.startswith('--HistoryManager')]
         args = yolox_parser(nms_thr, exp_path, seq_name, data2model, det_output_path, weight_path).parse_args(filtered_argv[1:])
+
+        # Gán giá trị conf theo env.ini
+        args.conf = conf
 
         exp = get_exp(args.exp_file)
         exp.merge(args.opts)
@@ -154,3 +164,6 @@ def detect():
             dist_url=args.dist_url,
             args=(exp, args, num_gpu),
         )
+    print("[DEBUG] Detection conf:", args.conf, " nms:", args.nms)
+
+

@@ -3,6 +3,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from configparser import ConfigParser
+import configparser
 from Tracktrack.Tracker.utils.etc import *
 # Đường dẫn
 
@@ -12,7 +13,7 @@ def main():
     
     # Đọc file config
     config_env = ConfigParser()
-    config_env.read('../env.ini')
+    config_env.read('env.ini')
 
     
     # Tách video thành folder ảnh, tạo các file json, exp

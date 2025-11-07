@@ -8,7 +8,7 @@ from .fastreid_adaptor import FastReID
 
 
 class EmbeddingComputer:
-    def __init__(self, config_path, weight_path, max_batch=1024):
+    def __init__(self, config_path, weight_path, max_batch=32): # 1024
         self.model = None
         self.config_path = config_path
         self.weight_path = weight_path

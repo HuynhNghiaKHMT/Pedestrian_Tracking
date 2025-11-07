@@ -1,0 +1,22 @@
+[global]
+# Thiết lập mức độ log tối thiểu. 
+# 'warning' sẽ tắt các thông báo 'info' và 'debug' của Streamlit.
+# Mặc định là 'info'.
+minWriteReplayLevel = "warning" 
+
+[logger]
+# Đặt mức log tối thiểu cho logger của Streamlit
+level = "warning"
+
+[server]
+# Giữ nguyên cài đặt của bạn
+keepAlive = true
+runOnSave = true
+
+# Thiết lập này chỉ áp dụng cho việc tự động reload khi file thay đổi,
+# không liên quan đến cảnh báo trong quá trình chạy.
+fileWatcherType = "none"
+
+[watcher]
+# Bỏ qua các thư mục PyTorch để ngăn xung đột.
+ignored_dirs = ["torch"]

@@ -1,41 +1,34 @@
-# Đồ án môn học 🏆 <br>
-## Tên đề tài: Theo dõi người đi bộ trong Video (Pedestrian Tracking in Videos) 🚶 📹
-## 👨‍🏫 Giảng viên hướng dẫn
-| Giảng viên        | Email                 |
-|-------------------|-------------------|
-| Mai Tiến Dũng | dungmt@uit.edu.vn |
-## 📬 Thông tin thành viên nhóm
+# CS420 - Pedestrian Tracking in Videos (Streamlit)
+Dự án này triển khai một ứng dụng Streamlit app để theo dõi các đối tượng (người đi bộ) trong chuỗi các khung hình (video) bằng cách sử dụng phương pháp Tracking-by-Detection. Ứng dụng này sử dụng mô hình YOLOX để phát hiện người đi bộ và FastReID để trích xuất đặc trưng nhận dạng, kết hợp với thuật toán theo dõi TrackTrack để duy trì nhận dạng người qua các khung hình.
 
-| Họ và Tên         | MSSV     | Email                 |GitHub                                      |
-|-------------------|----------|------------------------|--------------------------------------------|
-| Huỳnh Trung Nghĩa | 22520945 | 22520945@gm.uit.edu.vn | [HuynhNghiaKHMT](https://github.com/HuynhNghiaKHMT) |
-| Huỳnh Chí Nhân | 22520996 | 22520996@gm.uit.edu.vn | [nhanhuynh123](https://github.com/nhanhuynh123) |
-| Nguyễn Hồng Phát | 22521076 | 22521076@gm.uit.edu.vn | [hongphat13](https://github.com/hongphat13) |
+## 📦 Công nghệ và Thư viện sử dụng
 
+- [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX): Phát hiện đối tượng.
+- [TrackTrack](https://github.com/kamkyu94/TrackTrack): Thuật toán theo dõi đối tượng trong bài toán Mutil Object Tracking (MOT).
+- [FastReID](https://github.com/JDAI-CV/fast-reid): Trích xuất đặc trưng nhận dạng đối tượng (SBS-S50).
+- [Streamlit](https://streamlit.io/): Giao diện Web tương tác.
+- GPU: NVIDIA GeForce RTX 3050 Laptop GPU.
 
-# 🔤 Nội dung mã nguồn  
-## 📦 Công nghệ và thư viện sử dụng
 ## 📂 Cấu trúc thư mục
 ```bash
-demo
-├── demo/
-    └── demo_Tracktrack.py/
+Pedestrian_Tracking
+├── .streamlit/
+├── Appplication/
+    ├── demo_Tracktrack.py
+    └── app.py
+├── assets/
 ├── Input/
-    └── videos/
-        └── <input-video>.mp4
 ├── Outputs/
-    └── <input-video>/
-        ├── 1. det/
-        ├── 2. det_feat/
-        ├── 3. track/
-        └── videos/
 ├── Tracktrack/
     ├── YOLOX/
     ├── FastReID/
     └── Tracker/
 ├── Utils/
+├── .gitignore
 ├── env.ini
-└── requirements.txt
+├── requirements.txt
+└── README.md
+
 ```
 ## 🚀 Cài đặt và sử dụng
 Để chạy dự án, hãy làm theo các bước sau:
@@ -48,73 +41,63 @@ cd Pedestrian_Tracking
 ```
 
 ### 2. Tạo môi trường ảo
-Việc tạo môi trường ảo sẽ giúp bạn dễ dàng quản lí các phiên bản thư viện, giúp dễ cài đặt và sửa chữa, tránh lỗi phiên bản. <br>
-Khởi tạo môi trường ảo, khuyến khích dùng python=3.11.x. <br>
+```bash
+python -m venv venv
+venv\Scripts\activate  # Trên Windows
+```
 
 ### 3. Cài đặt các thư viện cần thiết
 ```bash
 pip install -r requirements.txt
 ```
 
+### 4. Các mô hình trọng số
+Tải các mô hình trọng số đã được huấn luyện sẵn và đặt chúng vào đúng thư mục "./weights/":
+- YOLOX_X:[mot17.pth.tar](https://drive.google.com/file/d/1MAb-Bhikx-fWe0VlJON_VMrYIyyyrt-F/view?usp=drive_link)
+- FastReID (SBS-S50): [mot17_sbs_S50.pth](https://drive.google.com/file/d/1rUYqWIj0nsQ23rDSv8NVx0Rrp3Lco1KP/view?usp=drive_link)
+- AFLinker: [mot17.pth.tar](https://drive.google.com/file/d/1rUYqWIj0nsQ23rDSv8NVx0Rrp3Lco1KP/view?usp=drive_link)
+```bash
+pip install -r requirements.txt
+```
 
-## 📝 Đánh giá mô hình trên toàn bộ Dataset
+## 📝 Đánh giá mô hình theo dõi qua các bộ phát hiện khác nhau
 
-| Dataset | Mode | Model | HOTA↑ | AssA | MOTA↑  | IDF1↑ | IDsw↓ | Frag↓ |
-|--------------|--------|--------|-------|-------|------|------|------|------|
-|  |  | **YOLOX_X**  | 69.1% | 72.7 |	79.7% | 85.0% | 40.0 | 87.0 |
-| ***MOT17*** | *val* | **YOLOv5_X** |  |  |  |  |  |  |
-|  |  | **YOLOv12_X** | 58.7% | 62.9 | 59.2% | 70.4% | 89.0 | 219.0 |
-|  |  | **YOLOX_X**  | 67.1% | 68.1 | 81.6% | 83.0%	| 822 | 1341.0 |
-| ***MOT17*** | *test* | **YOLOv5_X** |  |  |  |  |  |  |
-|  |  | **YOLOv12_X** | 48.6% | 52.7 | 51% | 61% | 1014 | 2199 |
+<img src="assets/evaluate.png" width="100%">
 
-
-## ✉️ Nội dung file **env.ini**
-
-<h3>[Path]</h3>
-<p>root_path = .. (đường dẫn chính, cố định)</p>
-<p>input_path = ../Input (đường dẫn chính đến thư mục Input, cố định)</p>
-<p>output_path = ../Outputs (đường dẫn chính đến thư mục Output, cố định)</p>
-
-<h3>[General]</h3>
-<p>mode = test (cố định)</p>
-
-<h3>[Input]</h3>
-<p>input_video = ../Input/videos/video2.mp4 (đường dẫn đến video input)</p>
-
-<h3>[Model]</h3>
-<p>data2model= mot17 (dùng cho lựa chọn mô hình detect, reid (mot17: thông thường, mot20: cảnh đông đúc))</p>
-<p>model= yolox (mô hình sử dụng, [yolox, yolov5, yolov12])</p>
-<p>type = (phiên bản của mô hình, vd: s,m,l,x (mặc định rỗng => x))</p>
-
-<h3>[YOLOX]</h3>
-<p>exp_path = ../Tracktrack/YOLOX/exps (Đường dẫn folder exp, cố định)</p>
-<p>json_path = ../Tracktrack/YOLOX/json (Đường dẫn folder json cho yolox detect, cố định)</p>
-<p>weight_path = ../Tracktrack/YOLOX/weights (Đường dẫn folder weight chứa trọng số cho yolox, cố định)</p>
-
-<h3>[ReID]</h3>
-<p>weight_path = ../Tracktrack/FastReID/weights (Đường dẫn folder weight chứa trọng số cho model reid, cố định)</p>
-<p>config_path = ../Tracktrack/FastReID/configs (Đường dẫn folder configs, cố định)</p>
-
-<h3>[Track]</h3>
-<p>af_link = ../Tracktrack/Tracker/AFLink/AFLink_epoch20.pth (Đường dẫn trọng số model AFLink, cố định)</p>
+**Lưu ý**: 
+- Kết quả của YOLOX cao hơn so với YOLOv5 và YOLOv12 do mô hình YOLOX được huấn luyện chuyên biệt cho bài toán phát hiện người đi bộ, trong khi YOLOv5 và YOLOv12 là các mô hình tổng quát hơn và chúng tôi chỉ sử dụng để so sánh hiệu quả và không hề huấn luyện lại.
+- Kết quả test được nộp theo chuẩn của MOT Challenge trên Codabench: https://www.codabench.org/competitions/10049/
 
 ## 🏃 Demo
-
-
-1. Thêm video vào thư mục ../Input/videos
-
-2. Sửa đường dẫn của input_video trong env.ini:
-
-```
-[Input]
-input_video = ../Input/videos/<tên-video>.mp4
-```
-
-3. Chạy chương trình tại thư mục gốc:
+### 1. Chạy Demo ByteTrack cơ bản
+Sau khi cài đặt các thư viện trong requirements.txt:
 ```bash
-python demo_Tracktrack.py
+python Application/demo_Tracktrack.py
 ```
+Lệnh này sẽ chạy demo tracking trực tiếp trên máy tính của bạn với video mẫu được cung cấp trong thư mục Input và các video kết quả trong thư mục Outputs.
 
-4. Video kết quả được lưu tại ../Output/<tên-video>/videos
+### 2. Chạy Demo với ứng dụng Streamlit
+```bash
+python -m streamlit run Application/app.py
+```
+Lệnh này sẽ chạy demo tracking trực tiếp trên Streamlit app và hỗ trợ điều chỉnh các tham số khác nhau. Mở trình duyệt và truy cập vào địa chỉ http://localhost:8501 để sử dụng ứng dụng.
 
+## 🎞️ Video Demo
+Dưới đây là một đoạn video/GIF ngắn minh họa hoạt động của ứng dụng Tracking-by-Detection mà chúng mình đã triển khai:
+
+
+https://github.com/user-attachments/assets/ae6b1397-6faf-4123-9ffe-4da526231eea
+
+
+<!-- <img src="assets/demo.gif" width="100%"> -->
+
+## 📬 Thông tin thành viên nhóm
+| Họ và Tên         | MSSV     | Email                 |GitHub                                      |
+|-------------------|----------|------------------------|--------------------------------------------|
+| Huỳnh Trung Nghĩa | 22520945 | 22520945@gm.uit.edu.vn | [HuynhNghiaKHMT](https://github.com/HuynhNghiaKHMT) |
+| Huỳnh Chí Nhân | 22520996 | 22520996@gm.uit.edu.vn | [nhanhuynh123](https://github.com/nhanhuynh123) |
+| Nguyễn Hồng Phát | 22521076 | 22521076@gm.uit.edu.vn | [hongphat13](https://github.com/hongphat13) |
+
+## 💖 Lời cảm ơn
+
+Chúng mình xin gửi lời cảm ơn chân thành đến cộng đồng mã nguồn mở và các tác giả đã phát triển những thư viện tuyệt vời như YOLO, Fast Reid, TrackTrack. Nhờ những công cụ đó mà bọn mình có thể học hỏi, thử nghiệm và hoàn thành đồ án này.

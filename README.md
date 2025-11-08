@@ -86,6 +86,8 @@ Lệnh này sẽ chạy demo tracking trực tiếp trên Streamlit app và hỗ
 Dưới đây là một đoạn video/GIF ngắn minh họa hoạt động của ứng dụng Tracking-by-Detection mà chúng mình đã triển khai:
 
 <!-- <img src="assets/demo.gif" width="100%"> -->
+https://github.com/user-attachments/assets/a498fc7f-1f76-4edc-b212-cb2d0e9c3cf5
+
 
 ## 📬 Thông tin thành viên nhóm
 | Họ và Tên         | MSSV     | Email                 |GitHub                                      |

@@ -81,30 +81,57 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
     print(f"Video saved at: {original_video_path}")
 
 
-    # -------------------------
-    ## 2. Det Video 
+        # -------------------------
+    ## 2. Det Video (Có kiểm tra và debug)
     # -------------------------
     try:
         with open(detection_file_path, 'rb') as f:
             detections = pickle.load(f)
+
+        # 🧩 Debug: hiển thị các key trong pickle
+        # print("\n📁 Các key có trong file pickle:", list(detections.keys()))
+
+        # Nếu seq_name không tồn tại trong pickle thì dùng key đầu tiên
+        if seq_name not in detections:
+            # print(f"⚠️ '{seq_name}' không có trong pickle, dùng key đầu tiên thay thế.")
+            seq_name = list(detections.keys())[0]
+
+        # 🧠 Kiểm tra kiểu dữ liệu
+        if not isinstance(detections[seq_name], dict):
+            # print(f"⚠️ Dữ liệu detections[{seq_name}] không phải dict, bỏ qua phần vẽ detection.")
+            detections = {seq_name: {}}
+
+        total_frames = len(detections[seq_name])
+        # print(f"✅ Tổng số frame có detection: {total_frames}\n")
+
         video = cv2.VideoWriter(detection_video_path, fourcc, fps, (width, height))
 
         for idx, image_name in enumerate(images, start=1):
             frame = cv2.imread(os.path.join(img_folder, image_name))
-            detection = detections[seq_name][idx]
+
+            # Lấy detection cho frame hiện tại (nếu có)
+            detection = detections[seq_name].get(idx, None)
+
+            if detection is None:
+                # print(f"⚠️ Frame {idx:04d} không có detection.")
+                video.write(frame)
+                continue
+
+            # 🧩 Debug: số lượng bbox trong frame
+            # print(f"🖼️ Frame {idx:04d}: {len(detection)} bounding boxes.")
 
             for box in detection:
-                x1, y1, x2, y2, score, cls = box
-                # bbox_color = get_color_simple(obj_id) # <--- SỬ DỤNG MÀU THEO ID
-                bbox_color = (0, 255, 0)  # Màu xanh lá cho detections
-                x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
-                # Vẽ hộp
-                cv2.rectangle(frame, (x1, y1), (x2, y2), bbox_color, 2)
-        
-                # Hiển thị confidence score
-                label = f"{score:.2f}"
-                cv2.putText(frame, label, (x1, max(0, y1 - 10)),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, bbox_color, 2) # <--- SỬ DỤNG MÀU THEO ID
+                try:
+                    x1, y1, x2, y2, score, cls = box
+                    bbox_color = (0, 255, 0)
+                    x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), bbox_color, 2)
+                    label = f"{score:.2f}"
+                    cv2.putText(frame, label, (x1, max(0, y1 - 10)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, bbox_color, 2)
+                except Exception as e:
+                    print(f"❌ Lỗi khi đọc bbox ở frame {idx}: {e}")
+                    continue
 
             video.write(frame)
 
@@ -112,9 +139,10 @@ def create_output_video(output_path, video_root, seq_name, img_folder_path, mode
         print(f"Video saved at: {detection_video_path}")
 
     except FileNotFoundError:
-        print(f"Lỗi: Không tìm thấy file DET tại {detection_file_path}")
+        print(f"❌ Lỗi: Không tìm thấy file DET tại {detection_file_path}")
     except Exception as e:
-        print(f"Lỗi khi xử lý DET video: {e}")
+        print(f"❌ Lỗi khi xử lý DET video: {e}")
+
 
 
     # -------------------------

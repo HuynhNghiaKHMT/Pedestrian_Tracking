@@ -1,6 +1,8 @@
 # CS420 - Pedestrian Tracking in Videos (Streamlit)
 Dự án này triển khai một ứng dụng Streamlit app để theo dõi các đối tượng (người đi bộ) trong chuỗi các khung hình (video) bằng cách sử dụng phương pháp Tracking-by-Detection. Ứng dụng này sử dụng mô hình YOLOX để phát hiện người đi bộ và FastReID để trích xuất đặc trưng nhận dạng, kết hợp với thuật toán theo dõi TrackTrack để duy trì nhận dạng người qua các khung hình.
 
+<img src="assets/pipeline.png" width="100%">
+
 ## 📦 Công nghệ và Thư viện sử dụng
 
 - [YOLOX](https://github.com/Megvii-BaseDetection/YOLOX): Phát hiện đối tượng.
